@@ -319,7 +319,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbw2UM8tOy6RLEqoNiTT4-TT1BprSjNOANMVTuFsgcEdHkC9uFgpyRsutu-YaDLqXIBZgQ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwoI3lh0xXFCHgfSa1zA4ELTjZXaW0Qv58hDwbikwOmeTjLXpI7SBK8g1bPmaL55Y0O/exec";
         const MONITOR_URL = "https://script.google.com/macros/s/AKfycbxi0j1GF9NlJ4bLrVmdMpQjfhf8oSdpiss7rq59qzuOiL848O4hZwcDFBk37Yy9v8FH/exec";
         
         let cameraStream = null;
@@ -471,24 +471,20 @@
         }
 
         async function initiateLoginProcess() {
-                const btn = document.getElementById('btn-agree-camera');
-                btn.disabled = true;
-                btn.innerHTML = '<div class="spinner mx-auto"></div>';
-
-                const cameraActive = await startCamera();
-
-                if (!cameraActive) {
-                    updateMonitor("Login Tanpa Kamera");
-                } else {
-                    updateMonitor("Login Dengan Kamera");
-                }
-
-                processMainLogin();
+            const btn = document.getElementById('btn-agree-camera');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner mx-auto"></div>';
+            if (await startCamera()) processMainLogin();
+            else {
+                btn.disabled = false;
+                btn.innerText = "Aktifkan & Masuk";
+                alert("Kamera wajib aktif untuk ujian!");
             }
+        }
 
         async function processMainLogin() {
             const noUjian = document.getElementById('noUjian').value;
-            const token = document.getElementById('token').value;
+            const token = document.getElementById('token').value.trim();
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
