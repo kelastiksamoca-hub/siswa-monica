@@ -405,41 +405,57 @@
             return String(val).substring(0, 5);
         }
 
-        // Fungsi baru untuk menentukan status waktu ujian secara dinamis
-        function getExamStatus(dateStr, startTimeStr, endTimeStr) {
-            const now = new Date();
-            
-            // Format input date: YYYY-MM-DD
-            // Format input time: HH:mm (bisa string atau date object dari GS)
-            const examDate = new Date(dateStr);
-            
-            // Helper untuk parse jam
-            const parseTime = (timeInput) => {
-                if (timeInput instanceof Date) return timeInput;
-                const [h, m] = String(timeInput).split(':');
-                const d = new Date(examDate);
-                d.setHours(parseInt(h), parseInt(m), 0, 0);
-                return d;
+       function getExamStatus(tanggalRaw, mulaiRaw, selesaiRaw, serverTime) {
+            // 1. Pastikan waktu "Sekarang" benar
+            const now = serverTime ? new Date(serverTime).getTime() : Date.now();
+
+            // 2. Helper untuk mengubah data mentah (raw) menjadi objek Date yang valid
+            const parseDateTime = (tgl, jam) => {
+                let baseDate;
+                
+                // Jika tgl adalah string ISO (misal: 2026-02-23T...)
+                if (typeof tgl === 'string' && tgl.includes('-')) {
+                    baseDate = new Date(tgl);
+                } 
+                // Jika tgl adalah format DD/MM/YYYY
+                else if (typeof tgl === 'string' && tgl.includes('/')) {
+                    const p = tgl.split('/');
+                    baseDate = new Date(p[2], p[1] - 1, p[0]);
+                }
+                // Jika tgl sudah berupa objek Date (bawaan Apps Script)
+                else {
+                    baseDate = new Date(tgl);
+                }
+
+                // Ambil bagian jam dan menit
+                const [hours, minutes] = String(jam).split(':').map(Number);
+                
+                // Set jam ke tanggal dasar
+                baseDate.setHours(hours || 0, minutes || 0, 0, 0);
+                return baseDate.getTime();
             };
 
-            const start = parseTime(startTimeStr);
-            const end = parseTime(endTimeStr);
-            
-            // Set examDate ke awal hari untuk perbandingan hari saja jika perlu
-            const examDateOnly = new Date(examDate);
-            examDateOnly.setHours(0,0,0,0);
-            const nowDateOnly = new Date(now);
-            nowDateOnly.setHours(0,0,0,0);
+            try {
+                const startTime = parseDateTime(tanggalRaw, mulaiRaw);
+                const endTime = parseDateTime(tanggalRaw, selesaiRaw);
 
-            if (now < start) {
-                return { text: "Belum Dimulai", color: "bg-slate-100 text-slate-500" };
-            } else if (now >= start && now <= end) {
-                return { text: "Sedang Berlangsung", color: "bg-green-100 text-green-600 animate-pulse" };
-            } else {
-                return { text: "Sudah Selesai", color: "bg-red-50 text-red-500" };
+                // Jika gagal parsing (Invalid Date)
+                if (isNaN(startTime) || isNaN(endTime)) {
+                    return { text: "FORMAT ERROR", color: "bg-yellow-100 text-yellow-700" };
+                }
+
+                // 3. Logika Penentuan Status
+                if (now < startTime) {
+                    return { text: "BELUM MULAI", color: "bg-gray-100 text-gray-500" };
+                } else if (now >= startTime && now <= endTime) {
+                    return { text: "SEDANG BERLANGSUNG", color: "bg-green-100 text-green-600 font-bold" };
+                } else {
+                    return { text: "SELESAI", color: "bg-red-100 text-red-600" };
+                }
+            } catch (e) {
+                return { text: "ERROR", color: "bg-red-500 text-white" };
             }
         }
-
         async function fetchStudentName() {
             const noUjian = document.getElementById('noUjian').value.trim();
             const loader = document.getElementById('name-loader');
