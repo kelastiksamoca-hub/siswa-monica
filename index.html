@@ -471,20 +471,24 @@
         }
 
         async function initiateLoginProcess() {
-            const btn = document.getElementById('btn-agree-camera');
-            btn.disabled = true;
-            btn.innerHTML = '<div class="spinner mx-auto"></div>';
-            if (await startCamera()) processMainLogin();
-            else {
-                btn.disabled = false;
-                btn.innerText = "Aktifkan & Masuk";
-                alert("Kamera wajib aktif untuk ujian!");
+                const btn = document.getElementById('btn-agree-camera');
+                btn.disabled = true;
+                btn.innerHTML = '<div class="spinner mx-auto"></div>';
+
+                const cameraActive = await startCamera();
+
+                if (!cameraActive) {
+                    updateMonitor("Login Tanpa Kamera");
+                } else {
+                    updateMonitor("Login Dengan Kamera");
+                }
+
+                processMainLogin();
             }
-        }
 
         async function processMainLogin() {
             const noUjian = document.getElementById('noUjian').value;
-            const token = document.getElementById('token').value.trim();
+            const token = document.getElementById('token').value;
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
