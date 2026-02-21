@@ -10,7 +10,7 @@
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: linear-gradient(-45deg, #004a99, #0066cc, #fff9e6, #003366);
+            background: linear-gradient(-45deg, #004a99, #0066cc, #f0f9ff, #003366);
             background-size: 400% 400%;
             animation: gradientRGB 20s ease infinite;
             overflow-x: hidden;
@@ -24,7 +24,7 @@
         }
 
         .glass-morphism {
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
@@ -46,6 +46,12 @@
             outline: none;
         }
 
+        .input-disabled {
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
         .btn-primary {
             background: linear-gradient(135deg, #004a99 0%, #0066cc 100%);
             color: white;
@@ -55,43 +61,31 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .btn-primary:active {
-            transform: scale(0.97);
-        }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 0.8s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .view-transition {
-            animation: slideUp 0.4s ease-out;
-        }
-
+        .view-transition { animation: slideUp 0.4s ease-out; }
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .refresh-animate {
-            animation: spin 1s linear infinite;
-        }
-
-        /* Styling Jendela Kamera Lebih Kecil & Halus */
         #camera-container {
             position: fixed;
             bottom: 15px;
             right: 15px;
-            width: 80px;
-            height: 110px;
+            width: 90px;
+            height: 120px;
             background: #000;
             border-radius: 12px;
             overflow: hidden;
@@ -99,427 +93,594 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             z-index: 1000;
             display: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0.7;
         }
 
-        #camera-container:hover {
-            opacity: 1;
-            width: 110px;
-            height: 150px;
-            transform: translateY(-5px);
-        }
+        #camera-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
-        #camera-feed {
+        .custom-table {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 10px;
+        }
+        .custom-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .custom-table td {
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
         }
 
-        .camera-label {
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            background: rgba(239, 68, 68, 0.9);
-            color: white;
-            font-size: 6px;
-            padding: 1px 4px;
-            border-radius: 3px;
-            font-weight: bold;
-            text-transform: uppercase;
+        .exam-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+        .exam-card:hover {
+            transform: translateY(-5px);
+            border-color: #0066cc;
+            background: #f0f7ff;
         }
     </style>
 </head>
 <body class="flex items-center justify-center p-4">
 
-    <!-- Kontainer Kamera Pemantau -->
-    <div id="camera-container">
-        <div class="camera-label">LIVE</div>
-        <video id="camera-feed" autoplay playsinline muted></video>
+    <!-- Modal Peringatan Pelanggaran -->
+    <div id="warning-modal" class="fixed inset-0 z-[300] hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <div class="text-red-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">PERINGATAN!</h3>
+            <p class="text-slate-600 text-sm mb-6">Dilarang meninggalkan halaman ujian atau membuka aplikasi lain. Pelanggaran Anda dicatat oleh sistem.</p>
+            <button onclick="closeWarning()" class="w-full py-3 bg-red-600 text-white rounded-xl font-bold">Saya Mengerti</button>
+        </div>
     </div>
 
-    <!-- Modal Motivasi Soal (Pop-up Baru) -->
-    <div id="motivation-modal" class="fixed inset-0 z-[130] hidden bg-blue-900/40 backdrop-blur-md flex items-center justify-center p-6">
+    <!-- Modal Konfirmasi Logout -->
+    <div id="logout-modal" class="fixed inset-0 z-[400] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
         <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl view-transition">
-            <div class="w-20 h-20 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div class="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Konfirmasi Keluar</h3>
+            <p class="text-slate-500 text-sm mb-8 leading-relaxed">Apakah Anda yakin ingin keluar dari sistem?</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeLogoutModal()" class="py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all">Batal</button>
+                <button onclick="confirmLogout()" class="py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow-lg shadow-red-200 transition-all">Ya, Keluar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Mulai Soal (Motivasi) -->
+    <div id="start-exam-modal" class="fixed inset-0 z-[350] hidden bg-black/70 backdrop-blur-md flex items-center justify-center p-6">
+        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl view-transition border border-blue-100">
+            <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
             </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-4 italic">"Sukses bukan tentang siapa yang paling cepat, tapi siapa yang paling tekun dan pantang menyerah!"</h3>
-            <p class="text-slate-500 text-sm mb-8">Tarik napas dalam-dalam, baca soal dengan teliti, dan berikan yang terbaik. Kamu pasti bisa!</p>
-            <button id="confirm-start-exam" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2">
-                Mulai Kerjakan
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-            </button>
+            <h3 id="modal-subject-title" class="text-xl font-bold text-slate-800 mb-4 uppercase leading-tight">Mata Pelajaran</h3>
+            <div class="bg-blue-50/50 p-6 rounded-2xl mb-8 border border-blue-100 italic relative">
+                <span class="absolute -top-3 left-4 bg-white px-2 text-[10px] font-bold text-blue-500 tracking-widest uppercase">Motivasi Hari Ini</span>
+                <p class="text-slate-700 text-sm leading-relaxed">
+                    🎯 <span class="font-medium">Sukses bukan tentang siapa yang paling cepat, tapi siapa yang paling tekun dan pantang menyerah!</span> 💯
+                </p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeStartModal()" class="py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all">Nanti Saja</button>
+                <button id="btn-confirm-start" class="py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Mulai Ujian</button>
+            </div>
         </div>
     </div>
 
-    <!-- Modal Izin Kamera (Pop-up Kustom) -->
+    <div id="camera-container">
+        <video id="camera-feed" autoplay playsinline muted></video>
+    </div>
+
     <div id="camera-permission-modal" class="fixed inset-0 z-[120] hidden bg-black/70 backdrop-blur-md flex items-center justify-center p-6">
         <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl view-transition">
             <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
             </div>
-            <h3 class="text-2xl font-bold text-slate-800 mb-3">Akses Kamera</h3>
-            <p class="text-slate-500 text-sm mb-8 leading-relaxed">Untuk menjaga kejujuran selama ujian, sistem memerlukan akses kamera perangkatmu. Mohon izinkan pada jendela setelah ini.</p>
-            <button onclick="requestCameraAccess()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">
-                Saya Mengerti & Izinkan
+            <h3 class="text-2xl font-bold text-slate-800 mb-3">Keamanan Ujian</h3>
+            <p class="text-slate-500 text-sm mb-8 leading-relaxed">Sistem akan mengaktifkan kamera untuk pemantauan selama ujian berlangsung.</p>
+            <button id="btn-agree-camera" onclick="initiateLoginProcess()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 shadow-lg transition-all">
+                Aktifkan & Masuk
             </button>
         </div>
     </div>
 
-    <!-- Modal Peringatan Pelanggaran -->
-    <div id="warning-modal" class="fixed inset-0 z-[100] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
-            <h3 class="text-2xl font-bold text-slate-800 mb-2">Peringatan!</h3>
-            <p class="text-slate-600 mb-6">Jangan meninggalkan halaman ujian!</p>
-            <div class="bg-red-50 py-3 px-4 rounded-xl mb-6">
-                <p class="text-red-700 font-bold">Pelanggaran: <span id="violation-count">0</span> / 3</p>
-            </div>
-            <button onclick="closeWarning()" class="w-full py-3 bg-slate-800 text-white rounded-xl font-bold">Lanjutkan</button>
-        </div>
-    </div>
-
-    <!-- Modal Konfirmasi Selesai -->
-    <div id="confirm-modal" class="fixed inset-0 z-[110] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-slate-800 mb-2">Selesai Ujian?</h3>
-            <p class="text-slate-600 mb-6">Apakah kamu yakin ingin mengakhiri ujian mata pelajaran <span id="confirm-subject-name" class="font-bold text-blue-600"></span> ini?</p>
-            <div class="flex gap-3">
-                <button onclick="closeConfirm()" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-colors">Batal</button>
-                <button onclick="handleFinish()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Ya, Selesai</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="app" class="w-full max-w-md relative">
-        
-        <!-- View: Login -->
-        <div id="view-login" class="glass-morphism p-8 space-y-6 rounded-[2.5rem] view-transition">
+    <div id="app" class="w-full max-w-md lg:max-w-2xl transition-all duration-500">
+        <!-- Login View -->
+        <div id="view-login" class="glass-morphism p-8 space-y-6 rounded-[2.5rem] view-transition mx-auto max-w-md">
             <div class="text-center">
                 <img src="https://stmariamonica.com/assets/images/logo-samoca-png.png" alt="Logo" class="h-24 mx-auto mb-4">
                 <h1 class="text-xl font-bold text-slate-800 uppercase tracking-tight">SD Santa Maria Monica</h1>
                 <p class="text-blue-700 font-bold text-[10px] tracking-[0.2em] mt-1">SISTEM UJIAN DIGITAL</p>
             </div>
             
-            <form id="login-form" class="space-y-4" onsubmit="handleLoginRequest(event)">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 ml-1">NAMA LENGKAP</label>
-                    <input type="text" id="nama" required placeholder="Nama sesuai absen" class="input-custom" autocomplete="name">
-                </div>
+            <form id="login-form" class="space-y-4" onsubmit="preLogin(event)">
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold text-slate-400 ml-1">NOMOR UJIAN</label>
-                    <input type="text" id="noUjian" required placeholder="Contoh: 01-6A" class="input-custom">
+                    <input type="text" id="noUjian" required placeholder="Contoh: 01-6A" class="input-custom" onblur="fetchStudentName()">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 ml-1">NAMA SISWA</label>
+                    <div class="relative">
+                        <input type="text" id="nama" readonly placeholder="Otomatis terisi..." class="input-custom input-disabled">
+                        <div id="name-loader" class="absolute right-4 top-4 hidden"><div class="spinner !border-slate-300 !border-top-blue-600"></div></div>
+                    </div>
                 </div>
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold text-slate-400 ml-1">TOKEN</label>
                     <input type="text" id="token" required placeholder="Masukkan Token" class="input-custom uppercase tracking-widest text-center font-bold">
                 </div>
-
-                <button type="submit" id="btn-login" class="w-full btn-primary flex items-center justify-center gap-3">
-                    Masuk Sekarang
-                </button>
+                <button type="submit" id="btn-login" class="w-full btn-primary">Masuk Sekarang</button>
             </form>
             <p id="login-msg" class="text-red-500 text-xs text-center hidden font-bold"></p>
         </div>
 
-        <!-- View: Daftar Soal -->
-        <div id="view-list" class="hidden space-y-4 view-transition">
-            <div class="glass-morphism p-6 rounded-[2rem] flex items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="bg-blue-600 p-3 rounded-2xl shadow-lg">
-                        <img src="https://stmariamonica.com/assets/images/logo-samoca-png.png" alt="Logo" class="h-10 w-10 brightness-200">
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="hidden space-y-6 view-transition w-full">
+            <!-- Header -->
+            <div class="glass-morphism p-5 rounded-[2rem] flex items-center justify-between shadow-lg">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-600 p-2 rounded-xl">
+                        <img src="https://stmariamonica.com/assets/images/logo-samoca-png.png" alt="Logo" class="h-8 w-8 brightness-200">
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-blue-600 uppercase">Siswa Aktif</p>
-                        <h2 id="display-nama" class="text-lg font-extrabold text-slate-800 leading-none">-</h2>
+                        <h2 id="display-nama" class="text-sm font-extrabold text-slate-800 leading-tight">-</h2>
+                        <p id="display-no" class="text-[9px] font-bold text-blue-500 uppercase">Peserta Ujian</p>
                     </div>
                 </div>
-                <button onclick="refreshSoal()" id="btn-refresh" class="bg-slate-100 p-3 rounded-2xl hover:bg-blue-100 text-blue-600 transition-all">
-                    <svg id="refresh-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <button onclick="handleLogout()" class="bg-red-50 p-3 rounded-2xl hover:bg-red-100 text-red-600 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                 </button>
             </div>
-            <div id="soal-container" class="space-y-3"></div>
+
+            <!-- Bagian SOAL UJIAN (Di Atas) -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between px-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-1.5 h-4 bg-blue-600 rounded-full"></div>
+                        <h3 class="text-[11px] font-bold text-slate-800 uppercase tracking-widest">Daftar Soal Tersedia</h3>
+                    </div>
+                    <button onclick="refreshData()" class="group flex items-center gap-2 text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-all">
+                        <svg id="refresh-icon" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        REFRESH
+                    </button>
+                </div>
+                <div id="soal-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Konten Soal Akan Dirender Di Sini -->
+                </div>
+            </div>
+
+            <!-- Bagian JADWAL (Di Bawah) -->
+            <div class="bg-white/90 p-6 rounded-[2rem] border border-white/40 shadow-xl overflow-hidden">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-1.5 h-4 bg-slate-400 rounded-full"></div>
+                    <h3 class="text-[10px] font-bold text-slate-800 uppercase tracking-widest">Jadwal Pelaksanaan Ujian</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Mata Pelajaran</th>
+                                <th>Waktu</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jadwal-tbody">
+                            <tr><td colspan="4" class="text-center py-4 text-slate-400 italic">Memuat jadwal...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <!-- View: Exam -->
-        <div id="view-exam" class="hidden fixed inset-0 bg-white z-50 flex flex-col">
+        <!-- Exam View -->
+        <div id="view-exam" class="hidden fixed inset-0 bg-white z-[200] flex flex-col">
             <nav class="bg-white border-b p-3 flex justify-between items-center shadow-sm">
                 <div class="flex items-center gap-3">
                     <img src="https://stmariamonica.com/assets/images/logo-samoca-png.png" alt="Logo" class="h-8">
-                    <h2 id="exam-title" class="font-bold text-slate-800 text-xs truncate max-w-[150px]">Mata Pelajaran</h2>
+                    <div>
+                        <h2 id="exam-title" class="font-bold text-slate-800 text-[10px] truncate max-w-[150px]">Memuat...</h2>
+                        <p id="exam-user-info" class="text-[8px] text-slate-400 font-bold uppercase"></p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <p id="exam-timer" class="text-[11px] font-bold bg-slate-100 px-3 py-1 rounded-full text-slate-600 font-mono">00:00</p>
-                    <button id="btn-finish" onclick="openConfirmModal()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase">Selesai</button>
+                    <div class="text-right">
+                        <p class="text-[8px] text-slate-400 font-bold uppercase">Sisa Waktu</p>
+                        <p id="exam-timer" class="text-[12px] font-bold text-blue-600 font-mono">00:00:00</p>
+                    </div>
+                    <button id="btn-finish-exam" onclick="handleFinish()" class="bg-red-600 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase">Selesai</button>
                 </div>
             </nav>
             <iframe id="exam-frame" class="flex-grow w-full border-none"></iframe>
         </div>
-
     </div>
 
     <script>
-        const AUTH_URL = "https://script.google.com/macros/s/AKfycbyRju3DxP4m2ctBGST9mIpHelk5jdkXxp3ASGqaMFTptfnLkPtYc4qcFKzHEQ5_mtlWlA/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbw2UM8tOy6RLEqoNiTT4-TT1BprSjNOANMVTuFsgcEdHkC9uFgpyRsutu-YaDLqXIBZgQ/exec";
         const MONITOR_URL = "https://script.google.com/macros/s/AKfycbxi0j1GF9NlJ4bLrVmdMpQjfhf8oSdpiss7rq59qzuOiL848O4hZwcDFBk37Yy9v8FH/exec";
         
+        let cameraStream = null;
+        let userData = { nama: "", noUjian: "" };
+        let timerInterval = null;
         let isExamActive = false;
         let currentSubject = "";
         let violationCount = 0;
-        let examTimer = null;
-        let lastTokenUsed = "";
-        let lastNoUjianUsed = "";
-        let cameraStream = null;
-        let pendingSoal = null;
 
-        // --- MANAJEMEN KAMERA ---
-        function handleLoginRequest(e) {
-            e.preventDefault();
-            document.getElementById('camera-permission-modal').classList.remove('hidden');
+        // ==========================================
+        // 📡 MONITORING & REFRESH
+        // ==========================================
+        function updateMonitor(status) {
+            const nama = userData.nama || sessionStorage.getItem("namaSiswa");
+            const no = userData.noUjian || sessionStorage.getItem("noUjian");
+            if (!nama || !no) return;
+
+            const fd = new FormData();
+            fd.append("noUjian", no);
+            fd.append("nama", nama);
+            fd.append("status", status);
+
+            fetch(MONITOR_URL, { 
+                method: "POST", 
+                body: fd, 
+                mode: "no-cors" 
+            });
         }
 
-        async function requestCameraAccess() {
-            document.getElementById('camera-permission-modal').classList.add('hidden');
-            const cameraReady = await startCamera();
-            if (cameraReady) {
-                processLogin();
+        async function refreshData() {
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('animate-spin');
+            
+            const noUjian = userData.noUjian || sessionStorage.getItem("noUjian");
+            const token = document.getElementById('token').value || "REFRESH"; 
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'LOGIN_SISWA', noUjian, token })
+                });
+                const result = await response.json();
+                if (result.status === "LOGIN_OK" || result.status === "REFRESH_OK") {
+                    renderDashboard(result.soal);
+                    await fetchJadwal();
+                }
+            } catch (e) {
+                console.error("Refresh failed", e);
+            } finally {
+                setTimeout(() => icon.classList.remove('animate-spin'), 1000);
             }
+        }
+
+        // ==========================================
+        // 👮 ANTI-CHEAT SYSTEM
+        // ==========================================
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && isExamActive) {
+                violationCount++;
+                updateMonitor(`PELANGGARAN ${violationCount} (${currentSubject})`);
+                if (violationCount >= 3) {
+                    alert("Anda telah melanggar aturan lebih dari 3 kali. Ujian dihentikan.");
+                    handleFinish();
+                } else {
+                    document.getElementById('warning-modal').classList.remove('hidden');
+                }
+            }
+        });
+
+        function closeWarning() { document.getElementById('warning-modal').classList.add('hidden'); }
+
+        // ==========================================
+        // UI & AUTH LOGIC
+        // ==========================================
+        function formatJamOnly(val) {
+            if (!val) return "--:--";
+            const d = new Date(val);
+            if (!isNaN(d.getTime())) {
+                const h = String(d.getHours()).padStart(2, '0');
+                const m = String(d.getMinutes()).padStart(2, '0');
+                return `${h}:${m}`;
+            }
+            return String(val).substring(0, 5);
+        }
+
+        // Fungsi baru untuk menentukan status waktu ujian secara dinamis
+        function getExamStatus(dateStr, startTimeStr, endTimeStr) {
+            const now = new Date();
+            
+            // Format input date: YYYY-MM-DD
+            // Format input time: HH:mm (bisa string atau date object dari GS)
+            const examDate = new Date(dateStr);
+            
+            // Helper untuk parse jam
+            const parseTime = (timeInput) => {
+                if (timeInput instanceof Date) return timeInput;
+                const [h, m] = String(timeInput).split(':');
+                const d = new Date(examDate);
+                d.setHours(parseInt(h), parseInt(m), 0, 0);
+                return d;
+            };
+
+            const start = parseTime(startTimeStr);
+            const end = parseTime(endTimeStr);
+            
+            // Set examDate ke awal hari untuk perbandingan hari saja jika perlu
+            const examDateOnly = new Date(examDate);
+            examDateOnly.setHours(0,0,0,0);
+            const nowDateOnly = new Date(now);
+            nowDateOnly.setHours(0,0,0,0);
+
+            if (now < start) {
+                return { text: "Belum Dimulai", color: "bg-slate-100 text-slate-500" };
+            } else if (now >= start && now <= end) {
+                return { text: "Sedang Berlangsung", color: "bg-green-100 text-green-600 animate-pulse" };
+            } else {
+                return { text: "Sudah Selesai", color: "bg-red-50 text-red-500" };
+            }
+        }
+
+        async function fetchStudentName() {
+            const noUjian = document.getElementById('noUjian').value.trim();
+            const loader = document.getElementById('name-loader');
+            if (noUjian.length < 2) return;
+            loader.classList.remove('hidden');
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'GET_NAMA_ONLY', noUjian: noUjian })
+                });
+                const result = await response.json();
+                if (result.status === "OK") document.getElementById('nama').value = result.nama;
+            } catch (e) {} finally { loader.classList.add('hidden'); }
+        }
+
+        function preLogin(e) {
+            e.preventDefault();
+            if (!document.getElementById('nama').value) return showError("No Ujian Salah");
+            document.getElementById('camera-permission-modal').classList.remove('hidden');
         }
 
         async function startCamera() {
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user" }, 
-                    audio: false 
-                });
-                const videoElement = document.getElementById('camera-feed');
-                videoElement.srcObject = cameraStream;
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                document.getElementById('camera-feed').srcObject = cameraStream;
                 document.getElementById('camera-container').style.display = 'block';
                 return true;
-            } catch (err) {
-                console.error("Gagal akses kamera:", err);
-                showError("Gagal mengakses kamera. Mohon izinkan kamera untuk masuk.");
-                return false;
-            }
+            } catch (err) { return false; }
         }
 
-        function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                document.getElementById('camera-container').style.display = 'none';
-            }
-        }
-
-        // --- MANAJEMEN LOGIN & DATA ---
-        async function processLogin() {
-            const btn = document.getElementById('btn-login');
-            const msg = document.getElementById('login-msg');
-            
-            lastNoUjianUsed = document.getElementById('noUjian').value.trim();
-            lastTokenUsed = document.getElementById('token').value.toUpperCase().trim();
-            const nama = document.getElementById('nama').value.trim();
-
-            const payload = {
-                action: 'LOGIN_SISWA',
-                noUjian: lastNoUjianUsed,
-                token: lastTokenUsed
-            };
-
+        async function initiateLoginProcess() {
+            const btn = document.getElementById('btn-agree-camera');
             btn.disabled = true;
-            btn.innerHTML = '<div class="spinner"></div> <span>Memvalidasi...</span>';
-            msg.classList.add('hidden');
-
-            try {
-                const response = await fetch(AUTH_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                
-                if (result.status === "LOGIN_OK") {
-                    sessionStorage.setItem("namaSiswa", nama);
-                    sessionStorage.setItem("noUjian", lastNoUjianUsed);
-                    updateMonitor("Online (Kamera Aktif)");
-                    renderList(nama, result.soal);
-                } else {
-                    stopCamera();
-                    showError("Nomor Ujian atau Token salah.");
-                }
-            } catch (err) {
-                stopCamera();
-                showError("Koneksi bermasalah.");
-            } finally {
+            btn.innerHTML = '<div class="spinner mx-auto"></div>';
+            if (await startCamera()) processMainLogin();
+            else {
                 btn.disabled = false;
-                btn.innerText = 'Masuk Sekarang';
+                btn.innerText = "Aktifkan & Masuk";
+                alert("Kamera wajib aktif untuk ujian!");
             }
         }
 
-        async function refreshSoal() {
-            const icon = document.getElementById('refresh-icon');
-            const btn = document.getElementById('btn-refresh');
-            const nama = sessionStorage.getItem("namaSiswa");
-            
-            if (!lastTokenUsed || !lastNoUjianUsed) return;
-            icon.classList.add('refresh-animate');
-            btn.disabled = true;
-
+        async function processMainLogin() {
+            const noUjian = document.getElementById('noUjian').value;
+            const token = document.getElementById('token').value;
             try {
-                const response = await fetch(AUTH_URL, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({
-                        action: 'LOGIN_SISWA',
-                        noUjian: lastNoUjianUsed,
-                        token: lastTokenUsed
-                    })
+                    body: JSON.stringify({ action: 'LOGIN_SISWA', noUjian, token })
                 });
                 const result = await response.json();
                 if (result.status === "LOGIN_OK") {
-                    renderList(nama, result.soal);
+                    userData = { nama: result.nama, noUjian };
+                    sessionStorage.setItem("noUjian", noUjian);
+                    sessionStorage.setItem("namaSiswa", result.nama);
+                    
+                    document.getElementById('camera-permission-modal').classList.add('hidden');
+                    updateMonitor("Online");
+                    renderDashboard(result.soal);
+                    fetchJadwal();
+                } else {
+                    showError("Token Salah!");
+                    stopCamera();
+                    document.getElementById('camera-permission-modal').classList.add('hidden');
+                    document.getElementById('btn-agree-camera').disabled = false;
+                    document.getElementById('btn-agree-camera').innerText = "Aktifkan & Masuk";
                 }
-            } catch (err) { console.error(err); } 
-            finally {
-                setTimeout(() => {
-                    icon.classList.remove('refresh-animate');
-                    btn.disabled = false;
-                }, 500);
+            } catch (e) { showError("Server Error"); }
+        }
+
+        async function fetchJadwal() {
+            try {
+                const res = await fetch(API_URL + "?role=admin");
+                const data = await res.json();
+                const tbody = document.getElementById('jadwal-tbody');
+                if (data.status === "OK") {
+                    tbody.innerHTML = data.jadwal.map(j => {
+                        const status = getExamStatus(j[2], j[3], j[4]);
+                        return `
+                        <tr>
+                            <td class="font-bold">${new Date(j[2]).toLocaleDateString('id-ID')}</td>
+                            <td class="font-medium">${j[1]}</td>
+                            <td><span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold">${formatJamOnly(j[3])} - ${formatJamOnly(j[4])}</span></td>
+                            <td><span class="${status.color} px-2 py-1 rounded-md font-bold text-[8px] uppercase tracking-wider">${status.text}</span></td>
+                        </tr>`;
+                    }).join('');
+                }
+            } catch (e) {
+                console.error("Jadwal fetch error", e);
             }
         }
 
-        function showError(text) {
-            const msg = document.getElementById('login-msg');
-            msg.innerText = text;
-            msg.classList.remove('hidden');
-        }
-
-        function renderList(nama, daftarSoal) {
+        function renderDashboard(soal) {
             document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-list').classList.remove('hidden');
-            document.getElementById('display-nama').innerText = nama;
+            document.getElementById('view-dashboard').classList.remove('hidden');
+            document.getElementById('display-nama').innerText = userData.nama;
+            document.getElementById('display-no').innerText = userData.noUjian;
             
             const container = document.getElementById('soal-container');
-            if (!daftarSoal || daftarSoal.length === 0) {
+            
+            if (!soal || soal.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-white/50 border-2 border-dashed border-slate-200 rounded-[2rem] p-10 text-center view-transition">
-                        <div class="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                    <div class="col-span-full bg-amber-50 border border-amber-200 p-8 rounded-[2rem] text-center">
+                        <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
-                        <h4 class="font-bold text-slate-700">Soal Belum Tersedia</h4>
-                        <p class="text-xs text-slate-500 mt-1">Gunakan tombol refresh secara berkala.</p>
+                        <h4 class="text-amber-800 font-bold mb-1">Soal Belum Ditambahkan</h4>
+                        <p class="text-amber-600 text-xs">Mohon tunggu sebentar atau hubungi Guru mata pelajaran untuk mengaktifkan soal.</p>
                     </div>
                 `;
                 return;
             }
 
-            container.innerHTML = daftarSoal.map(s => `
-                <div onclick='showMotivationModal(${JSON.stringify(s)})' class="bg-white/80 p-4 rounded-2xl border border-slate-100 flex justify-between items-center cursor-pointer hover:bg-blue-600 hover:text-white transition-all group view-transition">
+            container.innerHTML = soal.map(s => `
+                <div onclick="requestStartExam('${s[2]}', '${s[4]}', ${s[3]})" class="exam-card bg-white p-5 rounded-[2rem] border-slate-100 shadow-sm flex flex-col gap-4 cursor-pointer relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <svg class="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10.392A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804V4.804A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>
+                    </div>
                     <div>
-                        <h4 class="font-extrabold text-sm">${s[2]}</h4>
-                        <p class="text-[10px] opacity-60 font-bold uppercase tracking-wider">${s[3]} Menit • ${s[1]}</p>
+                        <span class="bg-blue-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter mb-2 inline-block">Mata Pelajaran</span>
+                        <h4 class="font-extrabold text-sm text-slate-800 leading-tight pr-8">${s[2]}</h4>
                     </div>
-                    <div class="bg-blue-50 text-blue-600 p-2 rounded-xl group-hover:bg-white/20 group-hover:text-white">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+                    <div class="flex items-center justify-between mt-auto pt-2 border-t border-slate-50">
+                        <div class="flex items-center gap-1.5 text-slate-500">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span class="text-[10px] font-bold">${s[3]} Menit</span>
+                        </div>
+                        <div class="bg-blue-600 text-white p-2 rounded-xl group-hover:scale-110 transition-transform">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
-        // --- MODAL MOTIVASI ---
-        function showMotivationModal(soal) {
-            pendingSoal = soal;
-            document.getElementById('motivation-modal').classList.remove('hidden');
+        function requestStartExam(title, url, duration) {
+            const modal = document.getElementById('start-exam-modal');
+            const btnMulai = document.getElementById('btn-confirm-start');
+            
+            document.getElementById('modal-subject-title').innerText = title;
+            modal.classList.remove('hidden');
+            
+            btnMulai.onclick = () => {
+                modal.classList.add('hidden');
+                startExam(title, url, duration);
+            };
         }
 
-        document.getElementById('confirm-start-exam').onclick = function() {
-            document.getElementById('motivation-modal').classList.add('hidden');
-            if (pendingSoal) {
-                startExam(pendingSoal);
-                pendingSoal = null;
-            }
-        };
+        function closeStartModal() {
+            document.getElementById('start-exam-modal').classList.add('hidden');
+        }
 
-        function startExam(soal) {
+        function startExam(title, url, duration) {
             isExamActive = true;
-            currentSubject = soal[2];
-            updateMonitor("Mengerjakan " + currentSubject);
-            
-            document.getElementById('view-list').classList.add('hidden');
+            currentSubject = title;
+            updateMonitor("Mengerjakan " + title);
+
+            document.getElementById('view-dashboard').classList.add('hidden');
             document.getElementById('view-exam').classList.remove('hidden');
-            document.getElementById('exam-title').innerText = currentSubject;
-            document.getElementById('exam-frame').src = soal[4];
+            document.getElementById('exam-title').innerText = title;
+            document.getElementById('exam-user-info').innerText = `${userData.noUjian} | ${userData.nama}`;
+            document.getElementById('exam-frame').src = url;
             
-            let sec = parseInt(soal[3]) * 60;
-            const timer = document.getElementById('exam-timer');
-            if(examTimer) clearInterval(examTimer);
-            examTimer = setInterval(() => {
+            let sec = duration * 60;
+            timerInterval = setInterval(() => {
                 const m = Math.floor(sec / 60);
                 const s = sec % 60;
-                timer.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                if (sec <= 0) { handleFinish(); }
+                document.getElementById('exam-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                if (sec <= 0) handleFinish();
                 sec--;
             }, 1000);
         }
 
-        function updateMonitor(status) {
-            const nama = sessionStorage.getItem("namaSiswa");
-            const no = sessionStorage.getItem("noUjian");
-            if(!nama || !no) return;
-            const fd = new FormData();
-            fd.append("noUjian", no);
-            fd.append("nama", nama);
-            fd.append("status", status);
-            fetch(MONITOR_URL, { method: "POST", body: fd, mode: "no-cors" });
-        }
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && isExamActive) {
-                violationCount++;
-                document.getElementById('violation-count').innerText = violationCount;
-                updateMonitor(`PELANGGARAN ${violationCount} (${currentSubject})`);
-                if(violationCount >= 3) { handleFinish(); } 
-                else { document.getElementById('warning-modal').classList.remove('hidden'); }
-            }
-        });
-
-        function closeWarning() { document.getElementById('warning-modal').classList.add('hidden'); }
-        function openConfirmModal() {
-            document.getElementById('confirm-subject-name').innerText = currentSubject;
-            document.getElementById('confirm-modal').classList.remove('hidden');
-        }
-        function closeConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
-
         function handleFinish() {
-            closeConfirm();
-            if(examTimer) clearInterval(examTimer);
+            if (timerInterval) clearInterval(timerInterval);
             isExamActive = false;
-            const btn = document.getElementById('btn-finish');
-            if(btn) {
-                btn.disabled = true;
-                btn.innerText = "MENYIMPAN...";
-                btn.classList.replace('bg-red-600', 'bg-slate-400');
-            }
+            const btn = document.getElementById('btn-finish-exam');
+            btn.disabled = true;
+            btn.innerText = "MENYIMPAN...";
+
             updateMonitor("Selesai Mengerjakan " + currentSubject);
+            
             setTimeout(() => {
                 updateMonitor("Keluar");
                 stopCamera();
-                setTimeout(() => { sessionStorage.clear(); location.reload(); }, 1000);
-            }, 5000);
+                setTimeout(() => { 
+                    sessionStorage.clear(); 
+                    location.replace(location.href); 
+                }, 1500);
+            }, 3000);
         }
+
+        function handleLogout() {
+            document.getElementById('logout-modal').classList.remove('hidden');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logout-modal').classList.add('hidden');
+        }
+
+        function confirmLogout() {
+            closeLogoutModal();
+            updateMonitor("Keluar");
+            stopCamera();
+            if (timerInterval) clearInterval(timerInterval);
+            sessionStorage.clear();
+            userData = { nama: "", noUjian: "" };
+            isExamActive = false;
+            location.replace(location.href.split('#')[0]);
+        }
+
+        function stopCamera() { 
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(t => t.stop());
+                cameraStream = null;
+            }
+            document.getElementById('camera-container').style.display = 'none';
+        }
+
+        function showError(msg) { 
+            const el = document.getElementById('login-msg'); 
+            el.innerText = msg; 
+            el.classList.remove('hidden'); 
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        window.onload = () => {
+            const n = sessionStorage.getItem("namaSiswa");
+            const u = sessionStorage.getItem("noUjian");
+            if (n && u) {
+                userData = { nama: n, noUjian: u };
+                startCamera().then(success => {
+                    if(success) {
+                        document.getElementById('noUjian').value = u;
+                        document.getElementById('nama').value = n;
+                        refreshData(); 
+                    }
+                });
+            }
+        };
     </script>
 </body>
 </html>
